@@ -300,9 +300,11 @@ class TestZeroEmptyGrad(DistributedTest):
                               "fp32"])
 @pytest.mark.parametrize("comm_type",
                          [torch.float16,
-                          torch.bfloat16],
+                          torch.bfloat16,
+                          None],
                          ids=["fp16",
-                              "bfp16"])
+                              "bfp16",
+                              "default"])
 class TestZeroDtypeCocktail(DistributedTest):
     world_size = 2
 
@@ -327,8 +329,11 @@ class TestZeroDtypeCocktail(DistributedTest):
             "zero_optimization": {
                 "stage": 2
             },
-            "communication_data_type": type_str[comm_type]
         }
+        if comm_type is not None:
+            config_dict["communication_data_type"] = type_str[comm_type]
+        else:
+            comm_type = comp_type
         hidden_dim = 10
 
         model = SimpleModel(hidden_dim)
